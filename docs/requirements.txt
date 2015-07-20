@@ -1,0 +1,49 @@
+Requirements for YourCI
+
+First things first, YourCI must not be a CD system. If I had seen any Open
+Source project doing both CI and CD rigth I wouldn't be writing this at 2AM, I
+wouldn't have spent nights trying them all.
+
+My exhaustive requirements are:
+
+- my private github repo and my CI server which is not reachable from internet
+- build artifacts for each pull request,
+- run a test script from a private github repo for every pull request,
+  automatically and by force,
+- with a matrix of environment variables in paralel, that should be generated
+  by a test_matrix script in the repo,
+- let the job retry by itself with incremental wait time in case of network
+  errors,
+- have the github commit status be updated with the test results and a link to
+  the build details,
+
+Also, I'm sure I'm wrong about this, but I don't need a master/slave system. I
+have a big badass CI server and my test script will do everything including
+container creation, provisionning and running tests, because hardware problem
+can be fixed with money rather than time implementing and maintaining a
+master/slave system.
+
+Configuration on my CI server should be as simple as::
+
+    repositories['yourproject'] = GitHub('orgname', 'reponame', 
+        'username', 'oauthkey', 'pubkey')
+
+Configuration in my project repo should be as simple as::
+
+    ENV_VAR_1 = ['foo', 'bar']
+    ENV_VAR_2 = ['x', 'y']
+
+    for x in ENV_VAR_1:
+        for y in ENV_VAR_2:
+            # there i can skip or implement basic logic
+            yield {'CMD': 'test.sh', 'ENV_VAR_1': x, 'ENV_VAR_2': y, 
+                   'RETRIES': 3, 'RETRY_AFTER': 600}
+
+For CD, I'd use something like Strider-CD, go.cd, or else. Those don't need to
+do build matrix, pull-request building, retry in , but they handle the deployment
+pipeline very well once they only have one valid branch to manage.
+
+I don't want the same tool for CI and CD because either is simple on its own,
+but trying to do both with the same leads to complications.
+
+Welcome to YourCI.
