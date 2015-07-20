@@ -1,49 +1,43 @@
 Requirements for YourCI
+~~~~~~~~~~~~~~~~~~~~~~~
+
+Introduction
+============
 
 First things first, YourCI must not be a CD system. If I had seen any Open
 Source project doing both CI and CD rigth I wouldn't be writing this at 2AM, I
 wouldn't have spent nights trying them all.
 
+Requirements
+============
+
 My exhaustive requirements are:
 
-- my private github repo and my CI server which is not reachable from internet
-- build artifacts for each pull request,
-- run a test script from a private github repo for every pull request,
-  automatically and by force,
-- with a matrix of environment variables in paralel, that should be generated
-  by a test_matrix script in the repo,
-- let the job retry by itself with incremental wait time in case of network
-  errors,
-- have the github commit status be updated with the test results and a link to
-  the build details,
+- I have a private github repo and a CI server which is not reachable from
+  internet,
+- Colleagues make pull requests on the repo,
+- We all want to know if the PR is safe for merge as soon as possible,
+- I'm mental about testing, so I want dynamic test matrix support,
+- And I want my repo to tell my CI what matrix to run (like .travis.yml)
+- I like to keep things simple, I want to run a script or command with
+  environment variables as my test matrix,
+- My builds fail sometimes because of network errors, I want automatic restart
+  of failed builds with incremental wait, again my repo knows.
+- I want the github commit status to know which builds are pending, which have
+  failed and which have passed.
 
-Also, I'm sure I'm wrong about this, but I don't need a master/slave system. I
-have a big badass CI server and my test script will do everything including
-container creation, provisionning and running tests, because hardware problem
-can be fixed with money rather than time implementing and maintaining a
-master/slave system.
+Continuous Deployment
+=====================
 
-Configuration on my CI server should be as simple as::
-
-    repositories['yourproject'] = GitHub('orgname', 'reponame', 
-        'username', 'oauthkey', 'pubkey')
-
-Configuration in my project repo should be as simple as::
-
-    ENV_VAR_1 = ['foo', 'bar']
-    ENV_VAR_2 = ['x', 'y']
-
-    for x in ENV_VAR_1:
-        for y in ENV_VAR_2:
-            # there i can skip or implement basic logic
-            yield {'CMD': 'test.sh', 'ENV_VAR_1': x, 'ENV_VAR_2': y, 
-                   'RETRIES': 3, 'RETRY_AFTER': 600}
-
-For CD, I'd use something like Strider-CD, go.cd, or else. Those don't need to
-do build matrix, pull-request building, retry in , but they handle the deployment
-pipeline very well once they only have one valid branch to manage.
+For CD, I'd use something like Strider-CD, go.cd, or anything that's made for
+CD. Those don't need to do build matrix, pull-request building, retry in, but
+they handle the deployment pipeline very well once they only have one valid
+branch to manage.
 
 I don't want the same tool for CI and CD because either is simple on its own,
 but trying to do both with the same leads to complications.
 
-Welcome to YourCI.
+Welcome to YourCI, and sorry for making yet another system and on my own, but
+this itch has been scratching me for too long. We have awesome CIaaS with
+Travis, AppVeyor and all, but nothing simple enough for my closed source
+projects, so here goes nothing.
