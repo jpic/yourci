@@ -84,9 +84,9 @@ def handle_test(owner, repo, pull, test):
     system(test['CMD'])
     sha = system('git rev-parse HEAD').strip()
 
-    gh.repos(owner)(repo).statuses(sha).post({
-        'state': 'success', 'target_url': 'myurl',
-        'context': str(test), 'description': 'Done'})
+    gh.repos(owner)(repo).statuses(sha).post(
+        state='success', target_url='http://myurl',
+        context=str(test), description='Done')
 
     for key in test.keys():
         os.environ.pop(key)
