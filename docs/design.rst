@@ -64,6 +64,12 @@ should be served by an HTTP server::
 .. danger:: The index page will take too long to load if there are too many
             symlinks. Use the find command to remove old files in a cron.
 
+Scaling
+=======
+
+Scaling is insane: just run as many rqworkers as you want on any box you want
+it just needs access to github and the redis server.
+
 Test configuration
 ==================
 
@@ -88,4 +94,5 @@ This example causes `4 tests
 HTTP interface
 ==============
 
-If you think this doesn't suck then go ahead and make a frontend.
+If you think this doesn't suck then go ahead and make a frontend. I'll just
+right-click the "Details" for a build on github and ``curl | vim -`` it.
