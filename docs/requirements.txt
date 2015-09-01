@@ -27,6 +27,11 @@ physically limited, when not by hardware then by network, and we'll literally
 take computers we find of the streets to test more pull request / os version /
 dependency tree combinations.
 
+Python 3
+========
+
+Because it makes you a better programer to do Python 3.
+
 Requirements
 ============
 
