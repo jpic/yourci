@@ -1,51 +1,50 @@
-Design documentation for YourCI
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+Design document for the first feature freeze
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-Global design
-=============
+This document details technical specifications for this package. Requirements
+are documented in a separate document.
 
-Given a github username and password or access token along with a list of
-repositories in the form of ``owner/repo``, YourCI should be able to:
+Command line interface
+======================
 
-- queue one job per repo ``handle_repo()``,
-- which will update the local repo mirror and iterate over open pull requests,
-  queuing one job per pull request ``handle_pull()``,
-- which will import a script ``.yci.py`` from the repo and call the
-  ``test_generator(build_id, pull_request)`` and queue one job ``handle_test``
-  per test configuration it yields,
-- that last job is supposed to run the test and update github configuration.
-- test output should be written in real time in a file that is served by your
-  http server of choice (which should be nginx, oh no i'm trolling again).
+Commands provided by this package will:
 
-Main script
+- rely on environment variables for configuration,
+- update commit statuses on github so that every job has an expected state and
+  URL,
+- store logs for your jobs in pending statuses in the current working directory
+  and serve them via http,
+- probably pickle in a file in /tmp for some caching.
+
+Environment variables
+---------------------
+
+GITHUB_USERNAME
+    Github username of the bot.
+
+GITHUB_TOKEN
+    Token for your bot's user.
+
+GITHUB_CONTEXTS
+    Configuration string, a space-separated list of ``owner/repo:context0,contextN``.
+
+RETRY_PATTERNS
+    Path to a file containing a newline-separated list of patterns to try on
+    failed build logs to determine if it should be rebuilt by the retry
+    command.
+
+Commands
+--------
+
+Command to "success" statuses with a context in the deprecated list.
+Command to queue pending jobs.
+Command to build pending jobs.
+Command to retry jobs failed because of a network error.
+Command to serve logs via http.
+Command to clean symlinks.
+
+File system
 ===========
-
-So that script should be run by cron with lockrun. It relies on python-rq which
-relies on redis for message queuing. You may run as many workers as you want.
-
-Start the script with the ``GITHUB_REPOSITORIES`` environment variable, a
-space-separated list of repositories in the form of ``user/project``.
-
-Example::
-
-    GITHUB_REPOSITORIES="jpic/test_project your/project" yourci
-
-It doesn't matter where you run this script from, since it's just fills the
-queue with ``handle_repository(owner, repo)`` calls that the workers will
-handle.
-
-Workers
-=======
-
-Run a worker in the directory you want to fill up with test data with the
-``rqworker`` command provided by ``python-rq`` (installed as a dependency) with
-the same environment variables:
-
-- ``GITHUB_USERNAME``, self-descriptive,
-- ``GITHUB_PASSWORD``, useful if you don't have an access token,
-- ``GITHUB_ACCESS_TOKEN``, useful if you don't want to use a password,
-- ``HTTP_ROOT``, the root url that your http server serves the test directory
-  with,
 
 With ``jpic/test_project``, it'll create such a directory structure which
 should be served by an HTTP server::
@@ -63,12 +62,6 @@ should be served by an HTTP server::
 
 .. danger:: The index page will take too long to load if there are too many
             symlinks. Use the find command to remove old files in a cron.
-
-Scaling
-=======
-
-Scaling is insane: just run as many rqworkers as you want on any box you want
-it just needs access to github and the redis server.
 
 Test configuration
 ==================
@@ -90,9 +83,3 @@ This example causes `4 tests
 
                 yield IncrementalRetry(retries=3, retry_increment=600,
                     Bash('./test.sh', env={'ENV_VAR_1': x, 'ENV_VAR_2': y}))
-
-HTTP interface
-==============
-
-If you think this doesn't suck then go ahead and make a frontend. I'll just
-right-click the "Details" for a build on github and ``curl | vim -`` it.
