@@ -36,12 +36,45 @@ RETRY_PATTERNS
 Commands
 --------
 
-Command to "success" statuses with a context in the deprecated list.
-Command to queue pending jobs.
-Command to build pending jobs.
-Command to retry jobs failed because of a network error.
-Command to serve logs via http.
-Command to clean symlinks.
+Deprecate
+`````````
+
+This command iterates over non-success statuses of the last commit of each pull
+request. If a status has a context that's not available anymore then it'll
+update it to have the "success" state.
+
+Good to clean up after jenkins.
+
+Queue
+`````
+
+Iterate over the last commit of each pull request and mark contexts as
+"pending" in github.
+
+Build
+`````
+
+Iterate over the last commit of each pull request and build the first "pending"
+context that has no running pid.
+
+Requeue
+```````
+
+Given a file containing a pattern per line (ie. ``Network error``), iterate
+over failure/error statuses of the last commit of each pull request and set
+their state to "pending" if their logs contain a string in the pattern, unless
+"yourci: norebuild" is found in any comment of the pull request before that
+commit.
+
+Http
+````
+
+Minimalist server to serve build logs, use nginx instead in production.
+
+Clean
+`````
+
+Clean symlinks in the file system.
 
 File system
 ===========
